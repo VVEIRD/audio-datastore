@@ -10,19 +10,31 @@ import java.util.List;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.yaml.snakeyaml.Yaml;
 
 public class AudioStorage {
 	
+	private static AudioStorage instance = null;
+
+	public synchronized static AudioStorage getInstance()  {
+		if(instance == null)
+			instance = new AudioStorage();
+		return instance;
+	}
+	
 	private AudioStorageConfiguration config = null;
 	
 	private HttpServer restWebServer = null;
 
-	public AudioStorage() throws IOException {
+	public AudioStorage()  {
 		Yaml yaml = new Yaml();
 		try (InputStream in = Files.newInputStream(Paths.get("config" + File.separator + "storage.yml"))) {
 			config = yaml.loadAs(in, AudioStorageConfiguration.class);
+		} catch (IOException e) {
+			config = new AudioStorageConfiguration();
+			e.printStackTrace();
 		}
 	}
 	
@@ -34,10 +46,11 @@ public class AudioStorage {
         // create a resource config that scans for JAX-RS resources and providers
         // in io.github.vveird.apinstance package
         final ResourceConfig rc = new ResourceConfig().packages(config.getEndPoints().toArray(new String[0]));
-
+        rc.register(MultiPartFeature.class);
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
         restWebServer = GrizzlyHttpServerFactory.createHttpServer(URI.create(config.getBaseUrl()), rc);
+        System.out.println("Server listening on [" + config.getBaseUrl() + "]");
     }
 
 	public static class AudioStorageConfiguration {
@@ -104,6 +117,14 @@ public class AudioStorage {
 		public static void main(String[] args) throws IOException {
 			System.out.println(new AudioStorage().config.toString());
 		}
+	}
+
+	public String getBaseUrl() {
+		return config.getBaseUrl();
+	}
+
+	public String getFileRoot() {
+		return config.getRoot();
 	}
 	
 }
