@@ -76,7 +76,7 @@ public class AudioStorageResource {
 		try {
 			filePath = Files.list(filePath).findFirst().orElse(null);
 			
-			if(Files.exists(filePath) && Files.isDirectory(filePath))
+			if(Files.exists(filePath) && !Files.isDirectory(filePath))
 				Files.delete(filePath);
 
 		    return MediaEntry.builder().returnCode(200).id(id).name(pathName).baseUrl(as.getBaseUrl()).build();
