@@ -1,7 +1,5 @@
 package io.github.vveird.audiodatastore.rest;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -68,11 +67,29 @@ public class AudioStorageResource {
 		}
 		return Response.status(404).build();
 	}
+	
+	@DELETE
+	@Path("/{id}/{pathname}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public MediaEntry deleteAudio(@PathParam("id") String id, @PathParam("pathname") String pathName) {
+		java.nio.file.Path filePath = Paths.get(as.getFileRoot(), id, pathName);
+		try {
+			filePath = Files.list(filePath).findFirst().orElse(null);
+			
+			if(Files.exists(filePath) && Files.isDirectory(filePath))
+				Files.delete(filePath);
+
+		    return MediaEntry.builder().returnCode(200).id(id).name(pathName).baseUrl(as.getBaseUrl()).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return MediaEntry.builder().returnCode(404).id(id).name(pathName).baseUrl(as.getBaseUrl()).build();
+	}
 
 	private boolean saveToFile(InputStream uploadedInputStream, java.nio.file.Path uploadedFileLocation, String fileName) {
-		if(Files.exists(uploadedFileLocation))
-			return false;
 		try {
+			if(Files.exists(uploadedFileLocation) && Files.list(uploadedFileLocation).findFirst().orElse(null) != null) 
+				return false;
 			if(!Files.exists(uploadedFileLocation) || !Files.isDirectory(uploadedFileLocation))
 				Files.createDirectories(uploadedFileLocation);
 			java.nio.file.Path filePath = Files.list(uploadedFileLocation).findFirst().orElse(null);

@@ -50,6 +50,35 @@ public class MediaEntry {
 		this.name = name;
 	}
 	
+	public static MediaEntryBuilder builder() {
+		return new MediaEntryBuilder();
+	}
 	
-
+	public static class MediaEntryBuilder {
+		private MediaEntry e = new MediaEntry();
+		
+		public MediaEntryBuilder name(String name) {
+			e.name = name;
+			return this;
+		}
+		
+		public MediaEntryBuilder returnCode(int returnCode) {
+			e.returnCode = returnCode;
+			return this;
+		}
+		
+		public MediaEntryBuilder id(String id) {
+			e.id = id;
+			return this;
+		}
+		
+		public MediaEntryBuilder baseUrl(String baseUrl) {
+			e.baseUrl = baseUrl;
+			return this;
+		}
+		
+		public MediaEntry build() {
+			return e;
+		}
+	}
 }
