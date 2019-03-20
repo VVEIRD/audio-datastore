@@ -25,6 +25,11 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import io.github.vveird.audiodatastore.AudioStorage;
 import io.github.vveird.audiodatastore.restdata.MediaEntry;
 
+/**
+ * TODO Implement basic HTTP auth (http://www.java2novice.com/restful-web-services/http-basic-authentication/)
+ * @author vveird
+ *
+ */
 @Path("/")
 public class AudioStorageResource {
 
