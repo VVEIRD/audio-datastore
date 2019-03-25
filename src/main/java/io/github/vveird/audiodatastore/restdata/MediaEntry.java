@@ -2,6 +2,7 @@ package io.github.vveird.audiodatastore.restdata;
 
 public class MediaEntry {
 	public int returnCode = 404;
+	public String storageId;
 	public String baseUrl;
 	public String id;
 	public String name;
@@ -54,6 +55,14 @@ public class MediaEntry {
 		return new MediaEntryBuilder();
 	}
 	
+	public String getStorageId() {
+		return storageId;
+	}
+	
+	public void setStorageId(String storageId) {
+		this.storageId = storageId;
+	}
+	
 	public static class MediaEntryBuilder {
 		private MediaEntry e = new MediaEntry();
 		
@@ -64,6 +73,11 @@ public class MediaEntry {
 		
 		public MediaEntryBuilder returnCode(int returnCode) {
 			e.returnCode = returnCode;
+			return this;
+		}
+		
+		public MediaEntryBuilder storageId(String storageId) {
+			e.storageId = storageId;
 			return this;
 		}
 		

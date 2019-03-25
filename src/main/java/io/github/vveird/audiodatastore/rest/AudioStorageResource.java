@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Objects;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,16 +24,22 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import io.github.vveird.audiodatastore.AudioStorage;
+import io.github.vveird.audiodatastore.data.AccessKey;
+import io.github.vveird.audiodatastore.data.StorageFile;
+import io.github.vveird.audiodatastore.restdata.HttpAccess;
 import io.github.vveird.audiodatastore.restdata.MediaEntry;
 
 /**
- * TODO Implement basic HTTP auth (http://www.java2novice.com/restful-web-services/http-basic-authentication/)
+ * TODO Implement basic HTTP auth
+ * (http://www.java2novice.com/restful-web-services/http-basic-authentication/)
+ * 
  * @author vveird
  *
  */
 @Path("/")
 public class AudioStorageResource {
 
+	private static final String UUID_STRING = "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}";
 	AudioStorage as = null;
 
 	public AudioStorageResource() {
@@ -40,80 +47,115 @@ public class AudioStorageResource {
 		this.as = AudioStorage.getInstance();
 	}
 
-	@POST
-	@Path("/{id}/{pathname}")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@GET
+	@Path("/access")
 	@Produces(MediaType.APPLICATION_JSON)
-	public MediaEntry uploadAudio(@PathParam("id") String id, @PathParam("pathname") String pathName,
-			@DefaultValue("true") @FormDataParam("enabled") boolean enabled,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail) {
-		System.out.println("Recieved file");
-		java.nio.file.Path filePath = Paths.get(as.getFileRoot(), id, pathName);
-		boolean saved = saveToFile(uploadedInputStream, filePath, fileDetail.getFileName());
-		if(saved)
-			System.out.println("File [" + filePath.toString() +  "] saved");
-		return new MediaEntry(saved? 200 : 409, as.getBaseUrl(), id, pathName);
+	public AccessKey createAccess() {
+		return as.generateKey();
+	}
+
+	@DELETE
+	@Path("/access/{owner:" + UUID_STRING + "}")
+	public boolean deleteUser(@PathParam("owner") String owner) {
+		return as.deleteUser(owner);
 	}
 	
-	@GET
-	@Path("/{id}/{pathname}")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadAudio(@PathParam("id") String id, @PathParam("pathname") String pathName) {
-		java.nio.file.Path filePath = Paths.get(as.getFileRoot(), id, pathName);
-		try {
-			filePath = Files.list(filePath).findFirst().orElse(null);
-
-		    ResponseBuilder response = Response.ok((Object) filePath.toFile());
-		    response.header("Content-Disposition", "attachment; filename=" + filePath.getFileName().toString());
-		    return response.build();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return Response.status(404).build();
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/access/control/{owner:" + UUID_STRING + "}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public HttpAccess setHttpAccess(HttpAccess httpAccess, @PathParam("owner") String owner) {
+		System.out.println();
+		System.out.println("-----------------------------------------------------------------------");
+		System.out.println("                              SETTING Http Access                      ");
+		System.out.println(" Owner Key provided: " + owner);
+		System.out.println(" ID:                 " + httpAccess.getId());
+		System.out.println(" Owner of ID:        " + httpAccess.getOwner());
+		System.out.println(" Is Owner:           " + owner.equals(httpAccess.getOwner()));
+		Objects.requireNonNull(httpAccess);
+		Objects.requireNonNull(httpAccess.getId());
+		Objects.requireNonNull(owner);
+		if(as.addHttpAccess(owner, httpAccess)) 
+			System.out.println(" Http Access Updated.");
+		else 
+			httpAccess = null;
+		System.out.println("-----------------------------------------------------------------------");
+		return httpAccess;
 	}
 	
 	@DELETE
-	@Path("/{id}/{pathname}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public MediaEntry deleteAudio(@PathParam("id") String id, @PathParam("pathname") String pathName) {
-		java.nio.file.Path filePath = Paths.get(as.getFileRoot(), id, pathName);
-		try {
-			filePath = Files.list(filePath).findFirst().orElse(null);
-			
-			if(Files.exists(filePath) && !Files.isDirectory(filePath))
-				Files.delete(filePath);
-
-		    return MediaEntry.builder().returnCode(200).id(id).name(pathName).baseUrl(as.getBaseUrl()).build();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return MediaEntry.builder().returnCode(404).id(id).name(pathName).baseUrl(as.getBaseUrl()).build();
+	@Path("/access/control/{owner:" + UUID_STRING + "}")
+	public Response deleteHttpAccess(@PathParam("owner") String owner) {
+		System.out.println();
+		System.out.println("-----------------------------------------------------------------------");
+		System.out.println("                              DELETE Http Access                       ");
+		System.out.println(" Owner Key provided: " + owner);
+		boolean deleted = as.removeHttpAccess(owner);
+		if(deleted) 
+			System.out.println(" Http Access deleted.");
+		System.out.println("-----------------------------------------------------------------------");
+		return Response.status(deleted ? 200 : 404).build();
+	}
+	
+	@GET
+	@Path("/access/{owner:" + UUID_STRING + "}")
+	public HttpAccess getHttpAccess(@PathParam("owner") String owner) {
+		return as.getHttpAccess(owner);
 	}
 
-	private boolean saveToFile(InputStream uploadedInputStream, java.nio.file.Path uploadedFileLocation, String fileName) {
-		try {
-			if(Files.exists(uploadedFileLocation) && Files.list(uploadedFileLocation).findFirst().orElse(null) != null) 
-				return false;
-			if(!Files.exists(uploadedFileLocation) || !Files.isDirectory(uploadedFileLocation))
-				Files.createDirectories(uploadedFileLocation);
-			java.nio.file.Path filePath = Files.list(uploadedFileLocation).findFirst().orElse(null);
-			if(filePath != null)
-				return false;
-		    try (OutputStream out = Files.newOutputStream(uploadedFileLocation.resolve(fileName), StandardOpenOption.CREATE_NEW)){
-		        int read = 0;
-		        byte[] bytes = new byte[1024];
+	@POST
+	@Path("/{id:" + UUID_STRING + "}/{name}/{user:" + UUID_STRING + "}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	public MediaEntry uploadAudio(@PathParam("id") String id, @PathParam("name") String name,
+			@PathParam("user") String user, @DefaultValue("true") @FormDataParam("enabled") boolean enabled,
+			@FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail) {
+		// Only with the right access key files can be saved under the corresponding
+		// path
+		System.out.println("-----------------------------------------------");
+		System.out.println("Upload initiated [/" + id + "/" + name + "]");
+		System.out.println("Access Key: " + user);
+		System.out.println("ID:         " + id);
+		System.out.println("Name:       " + name);
+		System.out.println("Verified:   " + as.hasAccess(id, user, false, true, false));
+		int rc = as.saveFile(user, id, name, fileDetail.getFileName(), uploadedInputStream);
+		if (rc == 200)
+			System.out.println("File [" + String.format("/%s/%s", id, name) + "] saved");
+		System.out.println("-----------------------------------------------");
+		System.out.println();
+		return MediaEntry.builder().returnCode(rc).id(id).name(name).baseUrl(as.getBaseUrl())
+				.storageId(as.getStorageId()).build();
+	}
+
+	@GET
+	@Path("/{id:" + UUID_STRING + "}/{name}/{user:" + UUID_STRING + "}")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadAudio(@PathParam("id") String id, @PathParam("name") String name, @PathParam("user") String user) {
+		StorageFile file = as.getFile(user, id, name);
+		if(!file.exists())
+			return Response.status(404).build();
+		java.nio.file.Path filePath = Paths.get(file.getLocalFile());
+		ResponseBuilder response = Response.ok((Object) filePath.toFile());
+		response.header("Content-Disposition", "attachment; filename=" + file.getUploadFileName());
+		return response.build();
+	}
 	
-		        while ((read = uploadedInputStream.read(bytes)) != -1) {
-		            out.write(bytes, 0, read);
-		        }
-		        out.flush();
-		        out.close();
-		        return true;
-		    }
-		}catch (IOException e) {
-	        e.printStackTrace();
-	    }
-        return false;
+
+	@GET
+	@Path("/{id:" + UUID_STRING + "}/{name}")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadAudio(@PathParam("id") String id, @PathParam("name") String name) {
+		return downloadAudio(id, name, null);
+	}
+
+	@DELETE
+	@Path("/{id:" + UUID_STRING + "}/{name}/{user:" + UUID_STRING + "}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public MediaEntry deleteAudio(@PathParam("id") String id, @PathParam("name") String name,
+			@PathParam("user") String user) {
+		int rc = as.deleteFile(user, id, name);
+		return MediaEntry.builder().returnCode(rc).id(id).name(name).baseUrl(as.getBaseUrl())
+				.storageId(as.getStorageId()).build();
 	}
 }
