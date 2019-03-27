@@ -1,8 +1,10 @@
-package io.github.vveird.audiodatastore.data;
+package io.github.vveird.audiodatastore.server.restdata;
 
 import java.util.UUID;
 
 public class AccessKey {
+	
+	private String storageId = null;
 	
 	private String owner;
 	
@@ -11,7 +13,8 @@ public class AccessKey {
 	public AccessKey() {
 	}
 
-	public AccessKey(String key, String id) {
+	public AccessKey(String storageId, String key, String id) {
+		this.storageId = storageId;
 		this.owner = key;
 		this.id = id;
 	}
@@ -28,8 +31,16 @@ public class AccessKey {
 		return id;
 	}
 
-	public void setid(String id) {
+	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getStorageId() {
+		return storageId;
+	}
+	
+	public void setStorageId(String storageId) {
+		this.storageId = storageId;
 	}
 
 	public static AccessKeyBuilder builder() {
@@ -38,8 +49,14 @@ public class AccessKey {
 
 	public static class AccessKeyBuilder {
 
+		private String storageId = null;
 		private String key;
 		private String id;
+
+		public AccessKeyBuilder storageId(String storageId) {
+			this.storageId = storageId;
+			return this;
+		}
 
 		public AccessKeyBuilder key(String key) {
 			this.key = key;
@@ -62,7 +79,7 @@ public class AccessKey {
 		}
 		
 		public AccessKey build() {
-			return new AccessKey(key, id);
+			return new AccessKey(storageId, key, id);
 		}
 	}
 }

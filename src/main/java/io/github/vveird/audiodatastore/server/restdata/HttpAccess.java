@@ -1,9 +1,9 @@
-package io.github.vveird.audiodatastore.restdata;
+package io.github.vveird.audiodatastore.server.restdata;
 
 import java.beans.Transient;
 import java.util.List;
 
-import io.github.vveird.audiodatastore.AudioStorage;
+import io.github.vveird.audiodatastore.server.AudioStorage;
 
 public class HttpAccess {
 	

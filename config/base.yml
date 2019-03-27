@@ -1,8 +1,8 @@
-!!io.github.vveird.audiodatastore.AudioStorage$AudioStorageConfiguration
+!!io.github.vveird.audiodatastore.server.AudioStorage$AudioStorageConfiguration
 accessList: []
-endPoints: [io.github.vveird.audiodatastore.rest]
+endPoints: [io.github.vveird.audiodatastore.server.rest]
 interfaceAdress: localhost
-keys:
+keys: []
 port: 3002
 root: data
 uriBase: as

@@ -1,4 +1,4 @@
-package io.github.vveird.audiodatastore.data;
+package io.github.vveird.audiodatastore.server.data;
 
 import java.io.IOException;
 import java.io.InputStream;

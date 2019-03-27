@@ -1,4 +1,4 @@
-package io.github.vveird.audiodatastore;
+package io.github.vveird.audiodatastore.server;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -19,10 +22,10 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.yaml.snakeyaml.Yaml;
 
-import io.github.vveird.audiodatastore.data.AccessKey;
-import io.github.vveird.audiodatastore.data.Storage;
-import io.github.vveird.audiodatastore.data.StorageFile;
-import io.github.vveird.audiodatastore.restdata.HttpAccess;
+import io.github.vveird.audiodatastore.server.data.Storage;
+import io.github.vveird.audiodatastore.server.data.StorageFile;
+import io.github.vveird.audiodatastore.server.restdata.AccessKey;
+import io.github.vveird.audiodatastore.server.restdata.HttpAccess;
 
 public class AudioStorage {
 	
@@ -124,12 +127,18 @@ public class AudioStorage {
         rc.register(MultiPartFeature.class);
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
-        restWebServer = GrizzlyHttpServerFactory.createHttpServer(URI.create(config.getBaseUrl()), rc);
-        System.out.println("Server listening on [" + config.getBaseUrl() + "]");
+        restWebServer = GrizzlyHttpServerFactory.createHttpServer(URI.create(config.getEndpoint()), rc);
+        Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+        l.setLevel(Level.FINE);
+        l.setUseParentHandlers(false);
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.ALL);
+        l.addHandler(ch);
+        System.out.println("Server listening on [" + config.getEndpoint() + "]");
     }
 
-	public String getBaseUrl() {
-		return config.getBaseUrl();
+	public String getEndpoint() {
+		return config.getEndpoint();
 	}
 
 	public String getFileRoot() {
@@ -137,7 +146,7 @@ public class AudioStorage {
 	}
 
 	public AccessKey generateKey() {
-		AccessKey ak = AccessKey.builder().idgen().keygen().build();
+		AccessKey ak = AccessKey.builder().idgen().keygen().storageId(getStorageId()).build();
 		config.addAccessKey(ak);
 		saveConfig();
 		return ak;
@@ -340,13 +349,13 @@ public class AudioStorage {
 			this.endPoints = endPoints;
 		}
 		
-		public String getBaseUrl() {
+		public String getEndpoint() {
 			return String.format("http://%s:%d/%s/", interfaceAdress, port, uriBase);
 		}
 		
 		@Override
 		public String toString() {
-			String tos = String.format("AudioStorage\r\nVersion: %s\r\nRoot: %s\r\nURL: %s", version, root, getBaseUrl());
+			String tos = String.format("AudioStorage\r\nVersion: %s\r\nRoot: %s\r\nURL: %s", version, root, getEndpoint());
 			return tos;
 		}
 		

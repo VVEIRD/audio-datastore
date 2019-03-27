@@ -1,11 +1,9 @@
-package io.github.vveird.audiodatastore.rest;
+package io.github.vveird.audiodatastore.server.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 import javax.ws.rs.Consumes;
@@ -23,11 +21,12 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import io.github.vveird.audiodatastore.AudioStorage;
-import io.github.vveird.audiodatastore.data.AccessKey;
-import io.github.vveird.audiodatastore.data.StorageFile;
-import io.github.vveird.audiodatastore.restdata.HttpAccess;
-import io.github.vveird.audiodatastore.restdata.MediaEntry;
+import io.github.vveird.audiodatastore.server.AudioStorage;
+import io.github.vveird.audiodatastore.server.data.StorageFile;
+import io.github.vveird.audiodatastore.server.restdata.AccessKey;
+import io.github.vveird.audiodatastore.server.restdata.HttpAccess;
+import io.github.vveird.audiodatastore.server.restdata.MediaEntry;
+import io.github.vveird.audiodatastore.server.restdata.StorageInfo;
 
 /**
  * TODO Implement basic HTTP auth
@@ -46,7 +45,23 @@ public class AudioStorageResource {
 		super();
 		this.as = AudioStorage.getInstance();
 	}
-
+	
+	@GET
+	@Path("/info")
+	@Produces(MediaType.APPLICATION_JSON)
+	public StorageInfo getInfo() {
+		long usableSpace = -1;
+		try {
+			System.out.println("Storage: " +  Files.getFileStore(Paths.get(as.getFileRoot())).name());
+			System.out.println("Total Space:  " +  Files.getFileStore(Paths.get(as.getFileRoot())).getTotalSpace());
+			System.out.println("Usable Space: " +  Files.getFileStore(Paths.get(as.getFileRoot())).getUsableSpace());
+			usableSpace = Files.getFileStore(Paths.get(as.getFileRoot())).getUsableSpace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new StorageInfo(as.getStorageId(), as.getEndpoint(), usableSpace);
+	}
+	
 	@GET
 	@Path("/access")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -124,7 +139,7 @@ public class AudioStorageResource {
 			System.out.println("File [" + String.format("/%s/%s", id, name) + "] saved");
 		System.out.println("-----------------------------------------------");
 		System.out.println();
-		return MediaEntry.builder().returnCode(rc).id(id).name(name).baseUrl(as.getBaseUrl())
+		return MediaEntry.builder().returnCode(rc).id(id).name(name).endpoint(as.getEndpoint())
 				.storageId(as.getStorageId()).build();
 	}
 
@@ -155,7 +170,7 @@ public class AudioStorageResource {
 	public MediaEntry deleteAudio(@PathParam("id") String id, @PathParam("name") String name,
 			@PathParam("user") String user) {
 		int rc = as.deleteFile(user, id, name);
-		return MediaEntry.builder().returnCode(rc).id(id).name(name).baseUrl(as.getBaseUrl())
+		return MediaEntry.builder().returnCode(rc).id(id).name(name).endpoint(as.getEndpoint())
 				.storageId(as.getStorageId()).build();
 	}
 }
