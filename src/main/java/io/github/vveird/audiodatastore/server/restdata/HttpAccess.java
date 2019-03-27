@@ -19,8 +19,8 @@ public class HttpAccess {
 	}
 	
 	@Transient
-	public String getOwner() {
-		return AudioStorage.getInstance().getOwner(id);
+	public String getSecret() {
+		return AudioStorage.getInstance().getSecret(id);
 	}
 
 	public String getId() {

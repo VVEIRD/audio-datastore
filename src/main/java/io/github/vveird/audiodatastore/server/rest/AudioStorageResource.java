@@ -70,27 +70,27 @@ public class AudioStorageResource {
 	}
 
 	@DELETE
-	@Path("/access/{owner:" + UUID_STRING + "}")
-	public boolean deleteUser(@PathParam("owner") String owner) {
-		return as.deleteUser(owner);
+	@Path("/access/{secret:" + UUID_STRING + "}")
+	public boolean deleteUser(@PathParam("secret") String secret) {
+		return as.deleteUser(secret);
 	}
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/access/control/{owner:" + UUID_STRING + "}")
+	@Path("/access/control/{secret:" + UUID_STRING + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public HttpAccess setHttpAccess(HttpAccess httpAccess, @PathParam("owner") String owner) {
+	public HttpAccess setHttpAccess(HttpAccess httpAccess, @PathParam("secret") String secret) {
 		System.out.println();
 		System.out.println("-----------------------------------------------------------------------");
 		System.out.println("                              SETTING Http Access                      ");
-		System.out.println(" Owner Key provided: " + owner);
+		System.out.println(" secret Key provided: " + secret);
 		System.out.println(" ID:                 " + httpAccess.getId());
-		System.out.println(" Owner of ID:        " + httpAccess.getOwner());
-		System.out.println(" Is Owner:           " + owner.equals(httpAccess.getOwner()));
+		System.out.println(" Secret of ID:        " + httpAccess.getSecret());
+		System.out.println(" Is secret:           " + secret.equals(httpAccess.getSecret()));
 		Objects.requireNonNull(httpAccess);
 		Objects.requireNonNull(httpAccess.getId());
-		Objects.requireNonNull(owner);
-		if(as.addHttpAccess(owner, httpAccess)) 
+		Objects.requireNonNull(secret);
+		if(as.addHttpAccess(secret, httpAccess)) 
 			System.out.println(" Http Access Updated.");
 		else 
 			httpAccess = null;
@@ -99,13 +99,13 @@ public class AudioStorageResource {
 	}
 	
 	@DELETE
-	@Path("/access/control/{owner:" + UUID_STRING + "}")
-	public Response deleteHttpAccess(@PathParam("owner") String owner) {
+	@Path("/access/control/{secret:" + UUID_STRING + "}")
+	public Response deleteHttpAccess(@PathParam("secret") String secret) {
 		System.out.println();
 		System.out.println("-----------------------------------------------------------------------");
 		System.out.println("                              DELETE Http Access                       ");
-		System.out.println(" Owner Key provided: " + owner);
-		boolean deleted = as.removeHttpAccess(owner);
+		System.out.println(" secret Key provided: " + secret);
+		boolean deleted = as.removeHttpAccess(secret);
 		if(deleted) 
 			System.out.println(" Http Access deleted.");
 		System.out.println("-----------------------------------------------------------------------");
@@ -113,9 +113,9 @@ public class AudioStorageResource {
 	}
 	
 	@GET
-	@Path("/access/{owner:" + UUID_STRING + "}")
-	public HttpAccess getHttpAccess(@PathParam("owner") String owner) {
-		return as.getHttpAccess(owner);
+	@Path("/access/{secret:" + UUID_STRING + "}")
+	public HttpAccess getHttpAccess(@PathParam("secret") String secret) {
+		return as.getHttpAccess(secret);
 	}
 
 	@POST

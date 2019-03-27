@@ -6,7 +6,7 @@ public class AccessKey {
 	
 	private String storageId = null;
 	
-	private String owner;
+	private String secret;
 	
 	private String id;
 	
@@ -15,16 +15,16 @@ public class AccessKey {
 
 	public AccessKey(String storageId, String key, String id) {
 		this.storageId = storageId;
-		this.owner = key;
+		this.secret = key;
 		this.id = id;
 	}
 
-	public String getOwner() {
-		return owner;
+	public String getSecret() {
+		return secret;
 	}
 
-	public void setOwner(String key) {
-		this.owner = key;
+	public void setSecret(String key) {
+		this.secret = key;
 	}
 
 	public String getId() {
@@ -50,7 +50,7 @@ public class AccessKey {
 	public static class AccessKeyBuilder {
 
 		private String storageId = null;
-		private String key;
+		private String secret;
 		private String id;
 
 		public AccessKeyBuilder storageId(String storageId) {
@@ -58,13 +58,13 @@ public class AccessKey {
 			return this;
 		}
 
-		public AccessKeyBuilder key(String key) {
-			this.key = key;
+		public AccessKeyBuilder secret(String secret) {
+			this.secret = secret;
 			return this;
 		}
 
 		public AccessKeyBuilder keygen() {
-			this.key = UUID.randomUUID().toString();
+			this.secret = UUID.randomUUID().toString();
 			return this;
 		}
 
@@ -79,7 +79,7 @@ public class AccessKey {
 		}
 		
 		public AccessKey build() {
-			return new AccessKey(storageId, key, id);
+			return new AccessKey(storageId, secret, id);
 		}
 	}
 }

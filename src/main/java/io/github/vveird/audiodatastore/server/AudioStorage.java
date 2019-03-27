@@ -184,12 +184,12 @@ public class AudioStorage {
 		return config.getStorageId();
 	}
 
-	public String getOwner(String id) {
-		return config.keys.stream().filter(a -> a.getId().equals(id)).map(a -> a.getOwner()).findFirst().orElse(null);
+	public String getSecret(String id) {
+		return config.keys.stream().filter(a -> a.getId().equals(id)).map(a -> a.getSecret()).findFirst().orElse(null);
 	}
 	
 	public boolean transferOwnership(String id, String oldOwner, String newOwner) {
-		String currentOwner = getOwner(id);
+		String currentOwner = getSecret(id);
 		Objects.requireNonNull(id, "id cannot be null");
 		Objects.requireNonNull(oldOwner, "oldOwner cannot be null");
 		Objects.requireNonNull(newOwner, "newOwner cannot be null");
@@ -197,7 +197,7 @@ public class AudioStorage {
 		if(!currentOwner.equals(oldOwner))
 			Objects.requireNonNull(null, "ID does not exists/Wrong owner supplied");
 		AccessKey ak = getAccessKey(id);
-		ak.setOwner(newOwner);
+		ak.setSecret(newOwner);
 		saveConfig();
 		return true;
 	}
@@ -210,25 +210,25 @@ public class AudioStorage {
 	 * Checks if the given uuid has access to the given id.
 	 * 
 	 * @param id     ID to check for
-	 * @param uuid   UUID that wants to access ID
+	 * @param uuidSecret   UUID that wants to access ID
 	 * @param read   <code>true</code>: Check for read access, <code>false</code>: do not check
 	 * @param write  <code>true</code>: Check for write access, <code>false</code>: do not check
 	 * @param delete <code>true</code>: Check for delete access, <code>false</code>: do not check
 	 * @return <code>true</code> if the selected access paths are allowed,
 	 *         <code>false</code> if one or more selected access paths are forbidden.
 	 */
-	public boolean hasAccess(String id, String uuid, boolean read, boolean write, boolean delete) {
+	public boolean hasAccess(String id, String uuidSecret, boolean read, boolean write, boolean delete) {
 		Objects.requireNonNull(id, "id cannot be null");
 		HttpAccess ha = config.getHttpAccessById(id);
 		// If no HttpAccess exists, read access is granted to everyone and write/delete
 		// access is granted to the owner only 
 		if(ha == null)
-			return !write && !delete && read || config.getAccesKeyById(id) != null && config.getAccesKeyById(id).getOwner().equals(uuid);
+			return !write && !delete && read || config.getAccesKeyById(id) != null && config.getAccesKeyById(id).getSecret().equals(uuidSecret);
 		boolean hasAccess = false;
-		boolean isOwner = ha.getOwner().equals(uuid);
-		boolean readAccess = ha.getRead().contains(uuid);
-		boolean writeAccess = ha.getWrite().contains(uuid);
-		boolean deleteAccess = ha.getDelete().contains(uuid);
+		boolean isOwner = ha.getSecret().equals(uuidSecret);
+		boolean readAccess = ha.getRead().contains(uuidSecret);
+		boolean writeAccess = ha.getWrite().contains(uuidSecret);
+		boolean deleteAccess = ha.getDelete().contains(uuidSecret);
 		hasAccess = read ? readAccess : hasAccess;
 		hasAccess = write ? writeAccess : hasAccess;
 		hasAccess = delete ? deleteAccess : hasAccess;
@@ -242,7 +242,7 @@ public class AudioStorage {
 	public boolean addHttpAccess(String accessKey, HttpAccess httpAccess) {
 		Objects.requireNonNull(accessKey);
 		Objects.requireNonNull(httpAccess);
-		if(accessKey.equals(httpAccess.getOwner())) {
+		if(accessKey.equals(httpAccess.getSecret())) {
 			config.addHttpAccess(httpAccess);
 			saveConfig();
 			return true;
@@ -302,7 +302,7 @@ public class AudioStorage {
 		}
 		
 		public List<AccessKey> getAccessKeyByOwner(String owner) {
-			return keys.stream().filter(k -> k.getOwner().equals(owner)).collect(Collectors.toList());
+			return keys.stream().filter(k -> k.getSecret().equals(owner)).collect(Collectors.toList());
 		}
 		
 		public void setRoot(String root) {
@@ -394,7 +394,7 @@ public class AudioStorage {
 		}
 		
 		public HttpAccess getHttpAccessByOwner(String owner) {
-			return this.accessList.stream().filter(a -> a.getOwner().equals(owner)).findFirst().orElse(null);
+			return this.accessList.stream().filter(a -> a.getSecret().equals(owner)).findFirst().orElse(null);
 		}
 		
 	}

@@ -35,7 +35,7 @@ public class AudioDatastoreClient {
 	 * 3: Custom name, userdefined
 	 * 4: User UUID
 	 */
-	private static final String UPLOAD_PATTERN = "%s/%s/%s%s";
+	private static final String UPLOAD_PATTERN = "%s/%s/%s/%s";
 	
 	static {
 		endpoints = AudioDatastoreDiscovery.getEndpoints();
@@ -55,7 +55,7 @@ public class AudioDatastoreClient {
 	public AudioDatastoreClient(AccessKey ac) {
 		this.storageId = ac.getStorageId();
 		this.defaultId = ac.getId();
-		this.authKey = ac.getOwner();
+		this.authKey = ac.getSecret();
 	}
 	
 	public InputStream getFile(MediaEntry me) {
@@ -79,12 +79,12 @@ public class AudioDatastoreClient {
 		uploadFile.setEntity(multipart);
 		CloseableHttpResponse response = httpClient.execute(uploadFile);
 		HttpEntity responseEntity = response.getEntity();
-		if(response.getEntity().getContentType().getValue().equals(ContentType.APPLICATION_JSON)) {
+//		if(response.getEntity().getContentType().getValue().equals(ContentType.APPLICATION_JSON)) {
 			InputStream meStream = response.getEntity().getContent();
 			MediaEntry me = new GsonBuilder().create().fromJson(new InputStreamReader(meStream), MediaEntry.class);
 			return me;
-		}
-		return null;
+//		}
+//		return null;
 	}
 	
 	public static void main(String[] args) throws ClientProtocolException, IOException {
