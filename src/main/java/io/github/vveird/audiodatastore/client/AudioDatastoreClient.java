@@ -24,6 +24,7 @@ import io.github.vveird.audiodatastore.server.restdata.AccessKey;
 import io.github.vveird.audiodatastore.server.restdata.MediaEntry;
 
 
+
 public class AudioDatastoreClient {
 	
 	private static Map<String, String> endpoints = new HashMap<>();
