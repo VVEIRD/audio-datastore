@@ -26,6 +26,10 @@ import io.github.vveird.audiodatastore.server.data.Storage;
 import io.github.vveird.audiodatastore.server.data.StorageFile;
 import io.github.vveird.audiodatastore.server.restdata.AccessKey;
 import io.github.vveird.audiodatastore.server.restdata.HttpAccess;
+import io.github.vveird.ssdp.SSDPListener;
+import io.github.vveird.ssdp.SSDPMessage;
+import io.github.vveird.ssdp.server.SSDPServer;
+import io.github.vveird.ssdp.server.SSDPService;
 
 public class AudioStorage {
 	
@@ -42,6 +46,10 @@ public class AudioStorage {
 	private Storage storage = null;
 	
 	private HttpServer restWebServer = null;
+	
+	private SSDPServer ssdp = null;
+	
+	private SSDPService service = null;
 
 	public AudioStorage()  {
 		initConfig();
@@ -71,6 +79,12 @@ public class AudioStorage {
 			saveStorage();
 			e.printStackTrace();
 		}
+	}
+
+	private void initSSDP() {
+		this.service = new SSDPService("urn:vveird:audio-storage:1", getStorageId(), getEndpoint(), null, 60);
+		this.ssdp = new SSDPServer();
+		this.ssdp.registerService(this.service);
 	}
 	
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -120,7 +134,7 @@ public class AudioStorage {
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
      * @return Grizzly HTTP server.
      */
-    public void startServer() {
+    public HttpServer startServer() {
         // create a resource config that scans for JAX-RS resources and providers
         // in io.github.vveird.apinstance package
         final ResourceConfig rc = new ResourceConfig().packages(config.getEndPoints().toArray(new String[0]));
@@ -135,6 +149,8 @@ public class AudioStorage {
         ch.setLevel(Level.ALL);
         l.addHandler(ch);
         System.out.println("Server listening on [" + config.getEndpoint() + "]");
+        initSSDP();
+        return restWebServer;
     }
 
 	public String getEndpoint() {

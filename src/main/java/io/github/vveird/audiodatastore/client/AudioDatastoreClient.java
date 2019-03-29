@@ -3,6 +3,8 @@ package io.github.vveird.audiodatastore.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -22,6 +24,8 @@ import com.google.gson.GsonBuilder;
 import io.github.vveird.audiodatastore.client.discovery.AudioDatastoreDiscovery;
 import io.github.vveird.audiodatastore.server.restdata.AccessKey;
 import io.github.vveird.audiodatastore.server.restdata.MediaEntry;
+import io.github.vveird.ssdp.SSDPClient;
+import io.github.vveird.ssdp.SSDPMessage;
 
 public class AudioDatastoreClient {
 
@@ -76,9 +80,19 @@ public class AudioDatastoreClient {
 	}
 
 	public static void main(String[] args) throws ClientProtocolException, IOException {
-		try (InputStream is = Files.newInputStream(Paths.get("C:\\Users\\asdf\\Downloads\\The-Awakening-1.png"))) {
-			MediaEntry me = uploadFile("http://localhost:3002/as", "88d5e517-6c10-43ee-adef-974f4bfd724d",
-					"67984e61-66ce-453a-86b5-5488362a9382", "ADumbFile", "The-Awakening-1.png", is);
+		SSDPClient sc = new SSDPClient(InetAddress.getLocalHost());
+		sc.sendMulticast(SSDPClient.getSSDPSearchMessage("urn:vveird:audio-storage:1"));
+		DatagramPacket dp = sc.responseReceive();
+		SSDPMessage sm = SSDPMessage.parse(dp, sc);
+		System.out.println(sm.toJson());
+		System.out.println(sm.toString());
+		
+		String usn = sm.getUSN();
+		String loc = sm.getLocation();
+		
+		try (InputStream is = Files.newInputStream(Paths.get("C:\\Users\\" + System.getProperty("user.name") + "\\Downloads\\The-Awakening-1.png"))) {
+			MediaEntry me = uploadFile(loc, "84d9152a-964e-4288-a218-0f32165c7527",
+					"26a5cf77-950c-4c58-baea-dc7a105e60cf", "ADumbFile", "The-Awakening-1.png", is);
 			String meS = new GsonBuilder().setPrettyPrinting().create().toJson(me);
 			System.out.println(meS);
 		}
