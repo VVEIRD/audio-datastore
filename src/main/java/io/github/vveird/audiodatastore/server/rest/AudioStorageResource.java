@@ -21,12 +21,12 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import io.github.vveird.audiodatastore.restdata.AccessKey;
+import io.github.vveird.audiodatastore.restdata.HttpAccess;
+import io.github.vveird.audiodatastore.restdata.MediaEntry;
+import io.github.vveird.audiodatastore.restdata.StorageInfo;
 import io.github.vveird.audiodatastore.server.AudioStorage;
 import io.github.vveird.audiodatastore.server.data.StorageFile;
-import io.github.vveird.audiodatastore.server.restdata.AccessKey;
-import io.github.vveird.audiodatastore.server.restdata.HttpAccess;
-import io.github.vveird.audiodatastore.server.restdata.MediaEntry;
-import io.github.vveird.audiodatastore.server.restdata.StorageInfo;
 
 /**
  * TODO Implement basic HTTP auth

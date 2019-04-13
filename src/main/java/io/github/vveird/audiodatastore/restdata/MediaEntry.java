@@ -1,4 +1,4 @@
-package io.github.vveird.audiodatastore.server.restdata;
+package io.github.vveird.audiodatastore.restdata;
 
 public class MediaEntry {
 	public int returnCode = 404;

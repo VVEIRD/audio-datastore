@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.github.vveird.audiodatastore.server.AudioStorage;
-import io.github.vveird.audiodatastore.server.Main;
+import io.github.vveird.audiodatastore.server.AudioStorageApp;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,7 +29,7 @@ public class AudioStoreTest {
 
         // uncomment the following line if you want to enable
         // support for JSON in the client (you also have to uncomment
-        // dependency on jersey-media-json module in pom.xml and Main.startServer())
+        // dependency on jersey-media-json module in pom.xml and AudioStorageApp.startServer())
         // --
         // c.configuration().enable(new org.glassfish.jersey.media.json.JsonJaxbFeature());
 

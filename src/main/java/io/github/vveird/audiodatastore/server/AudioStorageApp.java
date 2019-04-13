@@ -4,10 +4,10 @@ package io.github.vveird.audiodatastore.server;
 import java.io.IOException;
 
 /**
- * Main class.
+ * AudioStorageApp class.
  *
  */
-public class Main {
+public class AudioStorageApp {
 	public static void main(String[] args) throws IOException {
 		AudioStorage as = AudioStorage.getInstance();
 		as.startServer();

@@ -1,3 +1,3 @@
 !!io.github.vveird.audiodatastore.server.data.Storage
 root: data
-storagePaths: []
+storagePaths: {}

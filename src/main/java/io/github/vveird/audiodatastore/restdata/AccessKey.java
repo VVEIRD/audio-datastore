@@ -1,4 +1,4 @@
-package io.github.vveird.audiodatastore.server.restdata;
+package io.github.vveird.audiodatastore.restdata;
 
 import java.util.UUID;
 

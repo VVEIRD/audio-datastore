@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class Storage {
 	
@@ -15,7 +13,7 @@ public class Storage {
 
 	private Map<String, StorageFile> storagePaths = new HashMap<>();
 	
-	public Storage() {
+	public Storage() { 
 	}
 
 	public Storage(String root) {

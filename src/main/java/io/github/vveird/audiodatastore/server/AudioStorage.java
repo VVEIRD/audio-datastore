@@ -22,10 +22,11 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.yaml.snakeyaml.Yaml;
 
+import io.github.vveird.audiodatastore.restdata.AccessKey;
+import io.github.vveird.audiodatastore.restdata.AudioStoreParameter;
+import io.github.vveird.audiodatastore.restdata.HttpAccess;
 import io.github.vveird.audiodatastore.server.data.Storage;
 import io.github.vveird.audiodatastore.server.data.StorageFile;
-import io.github.vveird.audiodatastore.server.restdata.AccessKey;
-import io.github.vveird.audiodatastore.server.restdata.HttpAccess;
 import io.github.vveird.ssdp.SSDPListener;
 import io.github.vveird.ssdp.SSDPMessage;
 import io.github.vveird.ssdp.server.SSDPServer;
@@ -82,7 +83,7 @@ public class AudioStorage {
 	}
 
 	private void initSSDP() {
-		this.service = new SSDPService("urn:vveird:audio-storage:1", getStorageId(), getEndpoint(), null, 60);
+		this.service = new SSDPService(AudioStoreParameter.SSDP_STN, getStorageId(), getEndpoint(), null, 60);
 		this.ssdp = new SSDPServer();
 		this.ssdp.registerService(this.service);
 	}
